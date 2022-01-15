@@ -13,7 +13,7 @@ It requires **Python 3.7** or any later version.
 * Run the mask_cerator.py 
 
 * Install requirements file :
-		pip install -r requirements.txt 
+			pip install -r requirements.txt 
 
 ## Data Format 
 This GUI -- mask generator supports .jpg .png image formats
