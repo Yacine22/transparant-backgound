@@ -46,17 +46,17 @@ class fenetre:
                            font=("Roboto Mono", 48, "bold"))
         
         self.exit_button = Button(self.exit_frame, text='Exit', bg="#220780",
-                                  relief="ridge", command=self.destroy)
+                                  relief="flat", command=self.destroy)
         
         
         self.exit_button['image'] = self.exit_button_icon
         
         self.upload_button = Button(self.frame, text='Upload image', bg="#220794",
-                                    relief="ridge", command=self.upload_image)     
+                                    relief="flat", command=self.upload_image)     
         self.upload_button['image'] = self.upload_button_icon
         
         self.view_project = Button(self.frame, text='View Masks', bg="#220794",
-                                    relief="ridge")
+                                    relief="flat")
         self.view_project['image'] = self.project_icon_icon
         
         self.window.rowconfigure(0, weight=1)
