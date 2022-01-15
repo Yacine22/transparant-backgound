@@ -56,7 +56,7 @@ class fenetre:
         self.upload_button['image'] = self.upload_button_icon
         
         self.view_project = Button(self.frame, text='View Masks', bg="#220794",
-                                    relief="flat")
+                                    relief="flat", command=self.view_project)
         self.view_project['image'] = self.project_icon_icon
         
         self.window.rowconfigure(0, weight=1)
@@ -177,6 +177,96 @@ class fenetre:
         
         time.sleep(1)
         self.window_2.destroy()
+        
+    def view_project(self): 
+        self.project_wind = Toplevel()
+        self.project_wind.attributes('-fullscreen', True)
+        self.project_wind.title("To Mask image transform")
+        self.project_wind.configure(bg="#220794")
+        self.w = self.project_wind.winfo_screenwidth()
+    
+        self.project_frame = Frame(self.project_wind, bg="#220794")
+        self.project_frame.grid(row=0, column=0, sticky="news")
+        
+        self.label_frame = Frame(self.project_wind, bg="#220794")
+        self.label_frame.grid(row=0, column=0, padx=int(self.w/10), pady=int(self.w/10), sticky="n")
+        
+        self.label_display = Label(self.label_frame)
+        self.label_display['bd'] = 2
+        self.label_display['relief'] = "flat"
+        
+        self.exit_button2 = Button(self.project_frame, text='Back', bg="#FF07FF", width=5, 
+                                   height=2, fg="#210196", font=('TkDefaultFont',15,'bold'), 
+                                  relief="ridge", command=self.project_wind.destroy)
+        
+        self.exit_button2.pack(side=RIGHT, anchor=NW)
+        
+        self.exit_button3 = Button(self.project_frame, text='Delet', state=DISABLED, bg="#FF07FF", width=5, 
+                                   height=2, fg="#210196", font=('TkDefaultFont',15,'bold'), 
+                                  relief="ridge", command=self.message_box)
+        self.exit_button3.pack(side=RIGHT, anchor=NW)
+        
+        self.list_project = os.listdir("./masks/")
+        self.list_project.sort()
+        
+        self.scrollbar = Scrollbar(self.project_frame, width=40)
+        
+        self.listeProjet = Listbox(self.project_frame, height=45, 
+                                   yscrollcommand=self.scrollbar.set, 
+                                       font=('TkDefaultFont', 12,'bold'))
+        
+        for projet in self.list_project:
+            self.listeProjet.insert(END, projet)
+        self.listeProjet.bind("<<ListboxSelect>>", self.selection)
+        self.listeProjet.bind("<Return>", self.selection)
+        
+        self.project_wind.rowconfigure(0, weight=1)
+        self.project_wind.columnconfigure(0, weight=1)
+        
+        self.scrollbar.pack(side=LEFT, anchor=NW, fill=Y)
+        self.listeProjet.pack(side=LEFT, fill=Y)
+        
+        self.label_display.pack(anchor=CENTER)
+        
+              
+    def selection(self, event):  
+        self.exit_button3['state'] = NORMAL
+        self.w = self.project_wind.winfo_screenwidth()
+        projet_select = self.listeProjet.get(self.listeProjet.curselection())
+        
+        self.previewImg = Image.open("./masks/"+projet_select).resize((int(self.w/2), int(self.w/3)))
+        self.image__ = ImageTk.PhotoImage(self.previewImg, Image.BILINEAR)
+        
+        self.label_display.configure(image=self.image__)
+        
+    
+    def message_box(self):
+        self.message_box = Toplevel()
+        self.message_box.attributes('-fullscreen', True)
+        self.message_box.configure(bg="#220794")
+        
+        projet_select = self.listeProjet.get(self.listeProjet.curselection())
+        self.label_deleting = Label(self.message_box, text="Voulez-vous supprimer le Projet : "+str(projet_select), font=('Arial', 12, 'bold'))
+        self.button_yes = Button(self.message_box, text="Yes", width=10, height=5, command=self.remove_selected)
+        self.button_No = Button(self.message_box, text="No", width=10, height=5, command=self.message_box.destroy)
+        
+        self.message_box.rowconfigure(0, weight=1)
+        self.message_box.columnconfigure(0, weight=1)
+        
+        self.label_deleting.grid(row=0, column=0, pady=5, sticky='news')
+        self.button_yes.grid(row=1, column=0, pady=5, sticky='news')
+        self.button_No.grid(row=2, column=0, pady=5, sticky='news')
+        
+    def remove_selected(self):
+        projet_select = self.listeProjet.get(self.listeProjet.curselection())
+        directotory_to_remove = "./masks/"+str(projet_select)
+        os.remove(directotory_to_remove)
+        self.message_box.destroy()
+        self.project_wind.destroy()
+        
+        
+          
+        
 
 if __name__ == "__main__":
     fenetre = fenetre()
