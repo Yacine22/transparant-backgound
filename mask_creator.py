@@ -6,7 +6,7 @@ from skimage.filters import threshold_otsu
 import numpy as np
 import os
 from tkinter import *     
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from PIL import ImageTk, Image, ImageGrab
 from tkinter.filedialog import askopenfilename
 import cv2 as cv 
@@ -83,18 +83,29 @@ class fenetre:
         global image_path
         self.filename = askopenfilename()
         image_path = self.filename
+        if len(image_path) == 0:
+            print("No Image Selected !")
+            messagebox.showwarning("Please select image", "No image file selected!")
+        
+        # if image_path
+        extensions = {".jpg", ".png", ".PNG", ".JPG"}
+        image_file_check = any(image_path.endswith(ext) for ext in extensions)
         print(image_path)
-        self.view_project['state'] = DISABLED
-        self.upload_button['text'] = "Start transformation"
         
-        self.start_icon = Image.open(icons+"start.png")
-        self.start_button_icon = ImageTk.PhotoImage(self.start_icon, Image.BILINEAR)
-        
-        self.upload_button['image'] = self.start_button_icon
-        self.upload_button['command'] = self.image_transform
-        state = True
-        
-        
+        if image_file_check == True :
+            self.view_project['state'] = DISABLED
+            self.upload_button['text'] = "Start transformation"
+            
+            self.start_icon = Image.open(icons+"start.png")
+            self.start_button_icon = ImageTk.PhotoImage(self.start_icon, Image.BILINEAR)
+            
+            self.upload_button['image'] = self.start_button_icon
+            self.upload_button['command'] = self.image_transform
+            state = True
+            
+        elif image_file_check == False and len(image_path) != 0:
+            messagebox.showwarning("Please select image", "No image selected!")
+            
     def image_transform(self):
         self.window_2 = Toplevel()
         self.window_2.attributes("-fullscreen", True)
