@@ -27,6 +27,7 @@ class fenetre:
         self.window.configure(bg="#220794")
         
         self.exit_frame = Frame(self.window, bg="#220794")
+        self.reglage_frame = Frame(self.window, bg="#220794")
         self.frame = Frame(self.window, bg="#220794")
         
         
@@ -40,16 +41,22 @@ class fenetre:
         self.project_icon = Image.open(icons+"projects.png")
         self.project_icon_icon = ImageTk.PhotoImage(self.project_icon, Image.BILINEAR)
         
+        self.setting_icon = Image.open(icons+"reglages.png")
+        self.setting_button_icon = ImageTk.PhotoImage(self.setting_icon.resize((75, 75)), Image.BILINEAR)
+        
         ####### -------------------------------------------------------
         
         self.label = Label(self.frame, text="      Hello :) ", bg="#220794", fg="#FFF3AE", 
                            font=("Roboto Mono", 48, "bold"))
         
-        self.exit_button = Button(self.exit_frame, text='Exit', bg="#220780",
+        self.exit_button = Button(self.exit_frame, text='Exit', bg="#220794",
                                   relief="flat", command=self.destroy)
-        
-        
+            
         self.exit_button['image'] = self.exit_button_icon
+        
+        self.settings_button = Button(self.reglage_frame, text='reglages', bg="#220794",
+                                  relief="flat", command=self.reglages)
+        self.settings_button['image'] = self.setting_button_icon
         
         self.upload_button = Button(self.frame, text='Upload image', bg="#220794",
                                     relief="flat", command=self.upload_image)     
@@ -64,15 +71,60 @@ class fenetre:
         
         self.exit_frame.grid(row=0, column=0, sticky="ne")
         self.frame.grid(row=0, column=0, sticky="n")
+        self.reglage_frame.grid(row=0, column=0, sticky="nw")
         
         self.label.grid(row=0, column=2, padx=5, sticky='news')
         self.exit_button.grid(row=0, column=3, sticky='news')
+        self.settings_button.grid(row=0, column=0, sticky='news')
         self.upload_button.grid(row=4, column=2, padx=5, pady=20, sticky="n")
         self.view_project.grid(row=4, column=3, padx=10, pady=20, sticky="n")
         
         
     def mainloop(self):
         self.window.mainloop()
+        
+    def reglages(self): 
+        self.window_12 = Toplevel()
+        self.window_12.attributes("-fullscreen", True)
+        self.window_12.title("To Mask image transform")
+        self.window_12.configure(bg="#220794")
+        
+        self.frame12 = Frame(self.window_12, bg="#220794")
+        self.frame_Exit = Frame(self.window_12, bg="#220794")
+        
+        self.button_Ok = Button(self.frame_Exit, text="Save", bg="#FF07FF", width=5, 
+                                   height=2, fg="#210196", font=('TkDefaultFont',15,'bold'), 
+                                  relief="ridge", command=self.save_value)
+        self.button_Exit = Button(self.frame_Exit, text="Exit", bg="#FF07FF", width=5, 
+                                   height=2, fg="#210196", font=('TkDefaultFont',15,'bold'), 
+                                  relief="ridge", command=self.window_12.destroy)
+        
+        self.thresh_param = Scale(self.frame12, width=20, length=350, label="Reglage du seuil", bg="#220794", 
+                                 fg="#FF07FF", activebackground='white', from_=0, to=255, orient="horizontal", 
+                                  bd=3, command=self.thresh_value)
+        
+        self.window_12.rowconfigure(0, weight=1)
+        self.window_12.columnconfigure(0, weight=1)
+        
+        self.frame12.grid(row=0, column=0, sticky="news")
+        self.frame_Exit.grid(row=0, column=0, sticky="ne")
+        
+        self.button_Ok.grid(row=0, column=5, sticky="news")
+        self.button_Exit.grid(row=0, column=6, padx=2, sticky="news")
+        
+        self.thresh_param.grid(row=4, column=2, sticky='news')
+        
+    def save_value(self):
+        global _thresh_
+        _thresh_ = self.thresh_param.get()
+        print("--", _thresh_)
+        self.window_12.destroy()
+        
+    def thresh_value(self, value):
+        global _thresh_
+        _thresh_ = value
+        print(_thresh_)
+        
         
     def destroy(self): 
         time.sleep(0.01)
@@ -107,6 +159,7 @@ class fenetre:
             messagebox.showwarning("Please select image", "No image selected!")
             
     def image_transform(self):
+        
         self.window_2 = Toplevel()
         self.window_2.attributes("-fullscreen", True)
         self.window_2.title("To Mask image transform")
@@ -145,12 +198,11 @@ class fenetre:
         result[:, :, 3] = mask
         
         # save resulting masked image
-        cv.imwrite('./masks/'+file_name+'_bg.png', result)
+        cv.imwrite('./masks/'+file_name+str(_thresh_)+'_bg.png', result)
         
-        
-        image = cv.imread('./masks/'+file_name+'_bg.png', cv.IMREAD_GRAYSCALE)
+        image = cv.imread('./masks/'+file_name+str(_thresh_)+'_bg.png', cv.IMREAD_GRAYSCALE)
     
-        (thresh, im_bw) = cv.threshold(image, 128, 255, cv.THRESH_BINARY | cv.THRESH_OTSU)
+        (thresh, im_bw) = cv.threshold(image, _thresh_, 255, cv.THRESH_BINARY | cv.THRESH_OTSU)
 
         thresh = threshold_otsu(image) 
         binary = image > thresh
@@ -161,7 +213,7 @@ class fenetre:
             binary = np.ones((binary.shape[0], binary.shape[1], binary.shape[2])) - binary
                             
         binary[binary<1] = 0
-        cv.imwrite("./masks/"+file_name+"_mask.png", 255*binary)
+        cv.imwrite("./masks/"+file_name+"_mask"+str(_thresh_)+".png", 255*binary)
         
         for i in range(10):
             self.progress_bar['value'] += 100/10
@@ -191,7 +243,7 @@ class fenetre:
         self.label_frame = Frame(self.project_wind, bg="#220794")
         self.label_frame.grid(row=0, column=0, padx=int(self.w/10), pady=int(self.w/10), sticky="n")
         
-        self.label_display = Label(self.label_frame)
+        self.label_display = Label(self.label_frame, width=0, height=0)
         self.label_display['bd'] = 2
         self.label_display['relief'] = "flat"
         
@@ -239,7 +291,6 @@ class fenetre:
         
         self.label_display.configure(image=self.image__)
         
-    
     def message_box(self):
         self.message_box = Toplevel()
         self.message_box.attributes('-fullscreen', True)
@@ -263,9 +314,6 @@ class fenetre:
         os.remove(directotory_to_remove)
         self.message_box.destroy()
         self.project_wind.destroy()
-        
-        
-          
         
 
 if __name__ == "__main__":
